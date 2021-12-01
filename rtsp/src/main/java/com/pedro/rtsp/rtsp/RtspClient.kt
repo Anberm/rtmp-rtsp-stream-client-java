@@ -158,7 +158,7 @@ open class RtspClient(private val connectCheckerRtsp: ConnectCheckerRtsp) {
         return
       }
       val host = rtspMatcher.group(1) ?: ""
-      val port: Int = (rtspMatcher.group(2) ?: "554").toInt()
+      val port: Int = rtspMatcher.group(2)?.toInt() ?: if (tlsEnabled) 443 else 554
       val streamName = if (rtspMatcher.group(4).isNullOrEmpty()) "" else "/" + rtspMatcher.group(4)
       val path = "/" + rtspMatcher.group(3) + streamName
 
@@ -294,7 +294,7 @@ open class RtspClient(private val connectCheckerRtsp: ConnectCheckerRtsp) {
 
   private fun handleServerCommands() {
     //Read and print server commands received each 2 seconds
-    while (!Thread.interrupted()) {
+    while (!Thread.interrupted() && isStreaming) {
       try {
         if (isAlive()) {
           Thread.sleep(2000)
